@@ -1,5 +1,5 @@
 # WindowsKeyDisabler
-A windows tray utility for disabling the left Windows key
+A windows tray utility for temporarily disabling the left Windows key
 
 ## Description
 
