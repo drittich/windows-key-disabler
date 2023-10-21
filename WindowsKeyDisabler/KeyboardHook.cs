@@ -11,9 +11,7 @@ namespace WindowsKeyDisabler
 
 		public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-		public event EventHandler KeyPressed;
-
-		private LowLevelKeyboardProc _proc;
+		private readonly LowLevelKeyboardProc _proc;
 		private IntPtr _hookID = IntPtr.Zero;
 
 		public KeyboardHook()
@@ -31,13 +29,11 @@ namespace WindowsKeyDisabler
 			UnhookWindowsHookEx(_hookID);
 		}
 
-		private IntPtr SetHook(LowLevelKeyboardProc proc)
+		private static IntPtr SetHook(LowLevelKeyboardProc proc)
 		{
-			using (Process process = Process.GetCurrentProcess())
-			using (ProcessModule module = process.MainModule)
-			{
-				return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(module.ModuleName), 0);
-			}
+			using Process process = Process.GetCurrentProcess();
+			using ProcessModule module = process.MainModule!;
+			return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(module.ModuleName), 0);
 		}
 
 		private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -48,7 +44,6 @@ namespace WindowsKeyDisabler
 				int leftWindowsKey = 91;
 				if (vkCode == leftWindowsKey)
 				{
-					KeyPressed?.Invoke(this, EventArgs.Empty);
 					return (IntPtr)1; // suppress key press
 				}
 			}
@@ -66,7 +61,7 @@ namespace WindowsKeyDisabler
 		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		private static extern IntPtr GetModuleHandle(string lpModuleName);
 	}
 }
