@@ -42,7 +42,8 @@ namespace WindowsKeyDisabler
 			{
 				int vkCode = Marshal.ReadInt32(lParam);
 				int leftWindowsKey = 91;
-				if (vkCode == leftWindowsKey)
+				int rightWindowsKey = 92;
+				if (vkCode == leftWindowsKey || vkCode == rightWindowsKey)
 				{
 					return (IntPtr)1; // suppress key press
 				}
