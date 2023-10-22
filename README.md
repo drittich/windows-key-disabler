@@ -1,9 +1,9 @@
 # WindowsKeyDisabler
-A windows tray utility for temporarily disabling the left Windows key
+A windows tray utility for temporarily disabling the Windows key.
 
 ## Description
 
-This is a Windows tray application that lets you easily enable or disable the left Windows key. Useful for when playing full screen games and you don't want to accidentally get kicked out of full screen mode when hitting the Windows key by mistake.
+This is a Windows tray application that lets you easily enable or disable the Windows key. Useful for when playing full screen games and you don't want to get kicked out of full screen mode due to hitting the Windows key by mistake.
 
 ## Usage
 
