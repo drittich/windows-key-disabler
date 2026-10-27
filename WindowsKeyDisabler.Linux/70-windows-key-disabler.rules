@@ -1,0 +1,4 @@
+# Lets the logged-in desktop user grab keyboards and create the virtual keyboard that
+# Windows Key Disabler forwards keys through. Must sort before 73-seat-late.rules.
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", TAG+="uaccess"

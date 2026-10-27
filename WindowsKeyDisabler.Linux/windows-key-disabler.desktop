@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Key Disabler
+Comment=Temporarily disable the Windows (Super/Meta) key
+Exec=@INSTALL_DIR@/windows-key-disabler
+Icon=@INSTALL_DIR@/enabled.ico
+Categories=Utility;Game;
+Terminal=false
