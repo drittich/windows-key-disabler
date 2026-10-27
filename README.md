@@ -1,5 +1,5 @@
 # WindowsKeyDisabler
-A windows tray utility for temporarily disabling the Windows key.
+A windows tray utility for gamers that temporarily disables the Windows key.
 
 ## Description
 
