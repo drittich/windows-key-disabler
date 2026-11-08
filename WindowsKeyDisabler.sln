@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsKeyDisabler", "Windo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsKeyDisabler.Linux", "WindowsKeyDisabler.Linux\WindowsKeyDisabler.Linux.csproj", "{45304808-0495-4855-8438-C4591E553079}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsKeyDisabler.Linux.Tests", "WindowsKeyDisabler.Linux.Tests\WindowsKeyDisabler.Linux.Tests.csproj", "{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{45304808-0495-4855-8438-C4591E553079}.Release|x64.Build.0 = Release|Any CPU
 		{45304808-0495-4855-8438-C4591E553079}.Release|x86.ActiveCfg = Release|Any CPU
 		{45304808-0495-4855-8438-C4591E553079}.Release|x86.Build.0 = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|x64.Build.0 = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Debug|x86.Build.0 = Debug|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|x64.ActiveCfg = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|x64.Build.0 = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|x86.ActiveCfg = Release|Any CPU
+		{0E160635-37C6-43EC-AD18-6F0BB31D1B7C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Sleeper agent outcome (written per run, never committed)
+.sleeper/outcome.json

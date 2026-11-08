@@ -1,0 +1,6 @@
+{
+  "checks": [
+    { "name": "build", "command": "dotnet build WindowsKeyDisabler.sln" },
+    { "name": "test", "command": "dotnet test WindowsKeyDisabler.sln" }
+  ]
+}

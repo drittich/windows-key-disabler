@@ -13,3 +13,14 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
 Edit the "Label in our tracker" column to match whatever vocabulary you actually use.
+
+## Lifecycle states
+
+The `Status:` line in an issue file also takes two lifecycle states. They are not triage roles: they record work on a ticket once it is picked up (see `issue-tracker.md`).
+
+| Status    | Meaning                                                 |
+| --------- | ------------------------------------------------------- |
+| `claimed` | Someone has claimed the ticket and is working on it     |
+| `done`    | The ticket is resolved; tickets it blocks are unblocked |
+
+So the `Status:` values in use are the five triage roles above plus `claimed` and `done`.
