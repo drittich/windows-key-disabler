@@ -22,5 +22,24 @@ namespace WindowsKeyDisabler.Tests
 
 			Assert.False(grabber.IsGrabbed);
 		}
+
+		// poll(2) revents bits from <poll.h>: POLLIN 0x1, POLLERR 0x8, POLLHUP 0x10, POLLNVAL 0x20
+		[Theory]
+		[InlineData((short)0x08)]
+		[InlineData((short)0x10)]
+		[InlineData((short)0x20)]
+		[InlineData((short)(0x01 | 0x10))]
+		public void TreatsAnErroredOrRevokedDeviceAsGone(short revents)
+		{
+			Assert.True(KeyboardGrabber.IsDeviceGone(revents));
+		}
+
+		[Theory]
+		[InlineData((short)0x00)]
+		[InlineData((short)0x01)]
+		public void KeepsAHealthyDevice(short revents)
+		{
+			Assert.False(KeyboardGrabber.IsDeviceGone(revents));
+		}
 	}
 }

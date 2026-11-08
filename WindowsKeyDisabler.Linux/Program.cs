@@ -1,22 +1,49 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace WindowsKeyDisabler
 {
 	internal static class Program
 	{
+		private static readonly ShutdownGate signalShutdown = new();
+
+		// kept referenced for the life of the process, a collected registration stops handling its signal
+		private static PosixSignalRegistration[] signalRegistrations = [];
+
 		/// <summary>
 		///  The main entry point for the application.
 		/// </summary>
 		[STAThread]
 		static void Main(string[] args)
 		{
-			// we don't need a window, the app lives in the tray until Exit is chosen
+			// systemd stops the autostart unit with SIGTERM at logout, shutdown and reboot
+			signalRegistrations = [.. new[] { PosixSignal.SIGTERM, PosixSignal.SIGINT, PosixSignal.SIGHUP }
+				.Select(signal => PosixSignalRegistration.Create(signal, OnTerminationSignal))];
+
+			// we don't need a window, the app lives in the tray until Exit is chosen.
+			// X session management is off: its libSM teardown races process exit at logout and segfaults,
+			// and a tray app has no session state to save anyway
 			AppBuilder.Configure<App>()
 				.UsePlatformDetect()
+				.With(new X11PlatformOptions { EnableSessionManagement = false })
 				.StartWithClassicDesktopLifetime(args, ShutdownMode.OnExplicitShutdown);
+		}
+
+		private static void OnTerminationSignal(PosixSignalContext context)
+		{
+			// before Avalonia is up nothing is grabbed yet, so the default termination is fine; a repeated
+			// signal also falls through, so a hung UI thread can't hold up the shutdown
+			if (Application.Current is not App app || !signalShutdown.TryBegin())
+			{
+				return;
+			}
+
+			context.Cancel = true;
+			Dispatcher.UIThread.Post(app.Quit);
 		}
 	}
 
@@ -29,6 +56,8 @@ namespace WindowsKeyDisabler
 		private bool isEnabled = true;
 		private NativeMenuItem enableWindowsKeyMenuItem = null!;
 		private NativeMenuItem disableWindowsKeyMenuItem = null!;
+		private readonly ShutdownGate quitting = new();
+		private readonly ShutdownGate resourcesReleased = new();
 
 		public override void OnFrameworkInitializationCompleted()
 		{
@@ -39,6 +68,11 @@ namespace WindowsKeyDisabler
 			EnableWindowsKey(true);
 
 			trayIcon.Clicked += (s, e) => EnableWindowsKey(!isEnabled);
+
+			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				desktop.Exit += (s, e) => ReleaseResources();
+			}
 
 			base.OnFrameworkInitializationCompleted();
 		}
@@ -52,7 +86,7 @@ namespace WindowsKeyDisabler
 			disableWindowsKeyMenuItem.Click += (s, e) => EnableWindowsKey(false);
 
 			var exitMenuItem = new NativeMenuItem("Exit");
-			exitMenuItem.Click += ExitApplication_Click;
+			exitMenuItem.Click += (s, e) => Quit();
 
 			trayIcon = new TrayIcon
 			{
@@ -71,11 +105,28 @@ namespace WindowsKeyDisabler
 			TrayIcon.SetIcons(this, new TrayIcons { trayIcon });
 		}
 
-		private void ExitApplication_Click(object? sender, EventArgs e)
+		// the one way out, whether from Exit or a termination signal; must run on the UI thread
+		internal void Quit()
 		{
+			if (!quitting.TryBegin())
+			{
+				return;
+			}
+
+			ReleaseResources();
+			((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).Shutdown();
+		}
+
+		// also runs from the lifetime's Exit event, so every way the app ends gives the keyboard back
+		private void ReleaseResources()
+		{
+			if (!resourcesReleased.TryBegin())
+			{
+				return;
+			}
+
 			_grabber.Release();
 			trayIcon.Dispose();
-			((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).Shutdown();
 		}
 
 		void EnableWindowsKey(bool enabled)

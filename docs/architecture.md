@@ -20,6 +20,11 @@ lifetime with `ShutdownMode.OnExplicitShutdown`, since there is no window. Proce
 **before Avalonia starts** belongs here: platform options (e.g. `X11PlatformOptions`), environment tweaks, and
 POSIX signal registration.
 
+- X session management is disabled (`X11PlatformOptions.EnableSessionManagement = false`). Avalonia's libSM
+  teardown raced process exit at logout and segfaulted in `SmcCloseConnection`.
+- `SIGTERM`/`SIGINT`/`SIGHUP` are handled by cancelling the default termination and posting `App.Quit()` to the
+  UI thread. A repeated signal, or one before Avalonia is up, falls through to the default termination.
+
 ### `App` (`WindowsKeyDisabler.Linux/Program.cs`)
 
 The tray UI and the enabled/disabled state.
@@ -28,8 +33,9 @@ The tray UI and the enabled/disabled state.
   (Enable / Disable / Exit) and starts with the key enabled.
 - `EnableWindowsKey(bool)` is the single place that changes state: it calls `KeyboardGrabber.Grab()`/`Release()`,
   falls back to enabled and shows a `notify-send` error if the grab fails, then syncs the icon and the menu checks.
-- **Exit** currently releases the grab, disposes the tray icon and calls `Shutdown()` on the lifetime. This is the
-  only cleanup path today.
+- `Quit()` (from **Exit** and the signal handlers) releases the grab, disposes the tray icon and shuts down the
+  lifetime. The lifetime's `Exit` event also runs the release, so every way out gives the keyboard back. Both are
+  guarded by `ShutdownGate` (`ShutdownGate.cs`), a thread-safe run-once flag.
 
 ### `KeyboardGrabber` (`WindowsKeyDisabler.Linux/KeyboardGrabber.cs`)
 
@@ -45,7 +51,8 @@ A deep module: three members in front of all the evdev/uinput work.
 
 Internals: `ForwardEvents` polls the stop eventfd plus a (physical, virtual) fd pair per device, drops
 `KEY_LEFTMETA`/`KEY_RIGHTMETA`, writes the rest to the mirror, and copies `EV_LED` back from the mirror to the
-physical keyboard. A physical fd reporting `POLLERR/POLLHUP/POLLNVAL` is closed (unplugged keyboard). All native
+physical keyboard. If either fd of a pair reports `POLLERR/POLLHUP/POLLNVAL` (`IsDeviceGone`: unplugged keyboard,
+or access revoked at logout), the whole device is closed so the loop can't spin. All native
 calls are private `DllImport("libc")` declarations at the bottom of the file.
 
 ### Install assets
@@ -54,9 +61,6 @@ calls are private `DllImport("libc")` declarations at the bottom of the file.
 and `/dev/uinput`), `windows-key-disabler.desktop` (template, `@INSTALL_DIR@` substituted by `install.sh`).
 
 ## Where new code belongs
-
-Current Tickets: `.scratch/graceful-shutdown/issues/01-crash-on-session-shutdown.md` (clean exit on session end,
-SIGTERM, logout).
 
 - **Session-manager / X11 platform options, signal registration** → `Program.Main`, before `StartWithClassicDesktopLifetime`.
 - **One idempotent cleanup path** (release grab, dispose tray icon, shut down the lifetime) → a single method on

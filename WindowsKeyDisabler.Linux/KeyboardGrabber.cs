@@ -264,8 +264,9 @@ namespace WindowsKeyDisabler
 				{
 					var device = _devices[i];
 
-					// the keyboard was unplugged, stop listening to it (a negative fd is ignored by poll)
-					if ((fds[1 + i * 2].Revents & (POLLERR | POLLHUP | POLLNVAL)) != 0)
+					// the keyboard was unplugged, or access was revoked at logout: stop listening to it, otherwise
+					// poll keeps reporting the error and this loop spins (a negative fd is ignored by poll)
+					if (IsDeviceGone(fds[1 + i * 2].Revents) || IsDeviceGone(fds[2 + i * 2].Revents))
 					{
 						device.Close();
 						continue;
@@ -307,6 +308,8 @@ namespace WindowsKeyDisabler
 				}
 			}
 		}
+
+		internal static bool IsDeviceGone(short revents) => (revents & (POLLERR | POLLHUP | POLLNVAL)) != 0;
 
 		private static int ReadEvents(int fd, InputEvent[] buffer)
 		{
