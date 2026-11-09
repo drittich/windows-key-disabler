@@ -6,7 +6,7 @@ builds: `WindowsKeyDisabler/` (Windows, WinForms) and `WindowsKeyDisabler.Linux/
 
 ## Build and test
 
-Requires the .NET 10 SDK (it also builds the `net8.0-windows` project on Linux via `EnableWindowsTargeting`).
+Requires the .NET 10 SDK (it also builds the `net10.0-windows` project on Linux via `EnableWindowsTargeting`).
 
 ```bash
 dotnet build WindowsKeyDisabler.sln   # builds all three projects

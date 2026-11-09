@@ -5,7 +5,7 @@ builds that share nothing but the icons and the idea:
 
 | Project                          | Platform              | UI                  | How the key is blocked                         |
 | -------------------------------- | --------------------- | ------------------- | ---------------------------------------------- |
-| `WindowsKeyDisabler/`            | Windows, `net8.0-windows` | WinForms `NotifyIcon` | `WH_KEYBOARD_LL` low-level hook (`KeyboardHook`) |
+| `WindowsKeyDisabler/`            | Windows, `net10.0-windows` | WinForms `NotifyIcon` | `WH_KEYBOARD_LL` low-level hook (`KeyboardHook`) |
 | `WindowsKeyDisabler.Linux/`      | Linux, `net10.0` / `linux-x64` | Avalonia 11.3 `TrayIcon` | `EVIOCGRAB` + uinput mirror (`KeyboardGrabber`) |
 | `WindowsKeyDisabler.Linux.Tests/`| Linux, `net10.0`      | —                   | xUnit tests for the Linux build                |
 
