@@ -24,9 +24,14 @@ namespace WindowsKeyDisabler
 			signalRegistrations = [.. new[] { PosixSignal.SIGTERM, PosixSignal.SIGINT, PosixSignal.SIGHUP }
 				.Select(signal => PosixSignalRegistration.Create(signal, OnTerminationSignal))];
 
-			// we don't need a window, the app lives in the tray until Exit is chosen.
-			// X session management is off: its libSM teardown races process exit at logout and segfaults,
-			// and a tray app has no session state to save anyway
+			// X session management must be off: Avalonia's libSM client reads ICE on a thread-pool loop that keeps
+			// running while the session manager tears the connection down at logout, and segfaults. a tray app has
+			// no session state to save anyway. EnableSessionManagement alone doesn't stop the client connecting,
+			// so hide the session manager from libSM. Environment.SetEnvironmentVariable doesn't reach the native
+			// environment on Unix, hence unsetenv
+			unsetenv("SESSION_MANAGER");
+
+			// we don't need a window, the app lives in the tray until Exit is chosen
 			AppBuilder.Configure<App>()
 				.UsePlatformDetect()
 				.With(new X11PlatformOptions { EnableSessionManagement = false })
@@ -45,6 +50,9 @@ namespace WindowsKeyDisabler
 			context.Cancel = true;
 			Dispatcher.UIThread.Post(app.Quit);
 		}
+
+		[DllImport("libc", SetLastError = true)]
+		private static extern int unsetenv(string name);
 	}
 
 	public class App : Application

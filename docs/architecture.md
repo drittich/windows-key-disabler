@@ -20,8 +20,10 @@ lifetime with `ShutdownMode.OnExplicitShutdown`, since there is no window. Proce
 **before Avalonia starts** belongs here: platform options (e.g. `X11PlatformOptions`), environment tweaks, and
 POSIX signal registration.
 
-- X session management is disabled (`X11PlatformOptions.EnableSessionManagement = false`). Avalonia's libSM
-  teardown raced process exit at logout and segfaulted in `SmcCloseConnection`.
+- X session management is disabled by unsetting `SESSION_MANAGER` (libc `unsetenv`) before Avalonia starts, so
+  libSM's `SmcOpenConnection` fails and Avalonia never starts its ICE loop. Avalonia's session client segfaulted at
+  logout, in `SmcCloseConnection` and in `IceProcessMessages` on its thread-pool loop. In Avalonia 11.3,
+  `X11PlatformOptions.EnableSessionManagement = false` (also set) does not stop the client connecting.
 - `SIGTERM`/`SIGINT`/`SIGHUP` are handled by cancelling the default termination and posting `App.Quit()` to the
   UI thread. A repeated signal, or one before Avalonia is up, falls through to the default termination.
 
