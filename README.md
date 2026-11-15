@@ -31,3 +31,22 @@ To build from source instead (requires the [.NET 10 SDK](https://learn.microsoft
 This installs the app to `~/.local/share/windows-key-disabler`, adds it to the application menu, and installs the udev rule (asks for sudo). To start it on login, add it under System Settings > Autostart.
 
 Keyboards plugged in while the key is disabled aren't affected until you toggle it off and on again.
+
+### Disabling the key automatically for a Steam game
+
+While the app is running, `SIGUSR1` disables the Windows key and `SIGUSR2` enables it again. The process name is
+cut to 15 characters, so `pkill` matches it as `windows-key-dis`:
+
+```bash
+pkill -USR1 -x windows-key-dis   # disable
+pkill -USR2 -x windows-key-dis   # enable
+```
+
+To have a Steam game do this itself, open the game's Properties > General > Launch Options and enter:
+
+```
+sh -c 'pkill -USR1 -x windows-key-dis; "$@"; pkill -USR2 -x windows-key-dis' -- %command%
+```
+
+The key is disabled when the game starts and enabled again when it exits. If the game is force-stopped from Steam the
+second command may not run; click the tray icon to turn the key back on.

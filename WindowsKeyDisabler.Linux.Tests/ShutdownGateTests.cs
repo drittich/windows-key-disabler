@@ -11,5 +11,15 @@ namespace WindowsKeyDisabler.Tests
 			Assert.False(gate.TryBegin());
 			Assert.False(gate.TryBegin());
 		}
+
+		[Fact]
+		public void HasBegunOnlyAfterTheFirstCaller()
+		{
+			var gate = new ShutdownGate();
+
+			Assert.False(gate.HasBegun);
+			gate.TryBegin();
+			Assert.True(gate.HasBegun);
+		}
 	}
 }

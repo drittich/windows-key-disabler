@@ -26,6 +26,9 @@ POSIX signal registration.
   `X11PlatformOptions.EnableSessionManagement = false` (also set) does not stop the client connecting.
 - `SIGTERM`/`SIGINT`/`SIGHUP` are handled by cancelling the default termination and posting `App.Quit()` to the
   UI thread. A repeated signal, or one before Avalonia is up, falls through to the default termination.
+- `SIGUSR1`/`SIGUSR2` (`KeySignals`, `KeySignals.cs`) disable/enable the Windows key from outside the app, e.g. a
+  Steam launch option. Their default termination is always cancelled; the handler posts
+  `App.SetWindowsKeyEnabled(bool)`, which is ignored once the app is quitting.
 
 ### `App` (`WindowsKeyDisabler.Linux/Program.cs`)
 

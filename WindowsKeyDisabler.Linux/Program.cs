@@ -22,7 +22,8 @@ namespace WindowsKeyDisabler
 		{
 			// systemd stops the autostart unit with SIGTERM at logout, shutdown and reboot
 			signalRegistrations = [.. new[] { PosixSignal.SIGTERM, PosixSignal.SIGINT, PosixSignal.SIGHUP }
-				.Select(signal => PosixSignalRegistration.Create(signal, OnTerminationSignal))];
+				.Select(signal => PosixSignalRegistration.Create(signal, OnTerminationSignal))
+				.Concat(KeySignals.All.Select(signal => PosixSignalRegistration.Create(signal, OnKeySignal)))];
 
 			// X session management must be off: Avalonia's libSM client reads ICE on a thread-pool loop that keeps
 			// running while the session manager tears the connection down at logout, and segfaults. a tray app has
@@ -49,6 +50,18 @@ namespace WindowsKeyDisabler
 
 			context.Cancel = true;
 			Dispatcher.UIThread.Post(app.Quit);
+		}
+
+		private static void OnKeySignal(PosixSignalContext context)
+		{
+			// the default action for SIGUSR1/2 is to terminate, so always cancel it; a signal before Avalonia is
+			// up has nothing to switch yet and is dropped
+			context.Cancel = true;
+
+			if (Application.Current is App app && KeySignals.WindowsKeyEnabledFor(context.Signal) is bool enabled)
+			{
+				Dispatcher.UIThread.Post(() => app.SetWindowsKeyEnabled(enabled));
+			}
 		}
 
 		[DllImport("libc", SetLastError = true)]
@@ -123,6 +136,16 @@ namespace WindowsKeyDisabler
 
 			ReleaseResources();
 			((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).Shutdown();
+		}
+
+		// from SIGUSR1/SIGUSR2; must run on the UI thread. once quitting, a late disable would grab again after
+		// the release, so drop it
+		internal void SetWindowsKeyEnabled(bool enabled)
+		{
+			if (!quitting.HasBegun && !resourcesReleased.HasBegun)
+			{
+				EnableWindowsKey(enabled);
+			}
 		}
 
 		// also runs from the lifetime's Exit event, so every way the app ends gives the keyboard back

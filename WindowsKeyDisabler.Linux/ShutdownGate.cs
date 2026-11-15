@@ -9,5 +9,7 @@ namespace WindowsKeyDisabler
 		private int _started;
 
 		public bool TryBegin() => Interlocked.Exchange(ref _started, 1) == 0;
+
+		public bool HasBegun => Volatile.Read(ref _started) == 1;
 	}
 }
